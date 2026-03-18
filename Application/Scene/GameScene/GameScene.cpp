@@ -1,0 +1,525 @@
+﻿#include "GameScene.h"
+#include"../../GameViewModel.h"
+#include"../Src/Framework/Input/InputHandler/InputHandler.h"
+#include"../Src/Framework/Command/CommandInvoker/CommandInvoker.h"
+#include"../../GameLogic/StageModel/StageModel.h"
+#include"../Src/Framework/Component/GameObject.h"
+#include"../Src/Framework/Component/CameraComponent/CameraComponent.h"
+#include"../Src/Framework/Component/CameraComponent/EditorCameraComponent/EditorCameraComponent.h"
+#include"../Src/Framework/Component/SolutionVisualizerComponent/SolutionVisualizerComponent.h"
+#include"../Src/Framework/Component/TimerComponent/TimerComponent.h"
+#include"../../System/PhysicsSystem.h"
+#include"../SceneManager.h"
+#include"../GameScene/GameManager/GameManager.h"
+#include"../../StageListManager/StageListManager.h"
+#include"../../main.h"
+#include"../../Effect/Particle/ParticleSystem.h"
+#include"../../Effect/Particle/ColdAirParticleSystem/ColdAirParticleSystem.h"
+#include"../../Effect/Particle/TrailParticleSystem/TrailParticleSystem.h"
+#include"../../Effect/Particle/JumpParticleSystem/JumpParticleSystem.h"
+#include"../../Effect/Particle/UpdraftParticleSystem/UpdraftParticleSystem.h"
+#include"../../Effect/Particle/SparkleParticleSystem/SparkleParticleSystem.h"
+#include"../../Effect/Particle/DustParticleSystem/DustParticleSystem.h"
+#include"../../Effect/Particle/SparkParticleSystem/SparkParticleSystem.h"
+#include"../../Effect/Particle/ShockwaveParticleSystem/ShockwaveParticleSystem.h"
+#include"../../Effect/Particle/ImplosionParticleSystem/ImplosionParticleSystem.h"
+using json = nlohmann::json;
+
+GameScene::GameScene()
+{
+}
+
+GameScene::~GameScene()
+{
+}
+
+void GameScene::Init()
+{
+	m_bShowControlsWindow = false;
+	//1:主要なシステムとModelを生成
+	m_gameInputHandler = std::make_shared<InputHandler>();
+	m_commandInvoker = std::make_shared<CommandInvoker>();
+	m_spStageModel = std::make_shared<StageModel>();
+	m_spStageModel->Init();
+	m_debugWire = std::make_shared<KdDebugWireFrame>();
+
+	//2:ViewModelを生成してModelとInvokerを渡す
+	m_spGameViewModel = std::make_shared<GameViewModel>(m_spStageModel, m_commandInvoker, this);
+
+	//3:InputHandlerの報告先をViewModelに設定
+	m_gameInputHandler->SetViewModel(m_spGameViewModel);
+
+	//5:ViewModelにステージ読み込みを指示
+	const std::string& stageToLoad = GameManager::Instance().GetCurrentFilePath();
+	m_spGameViewModel->LoadStage(stageToLoad);
+
+	//6:Editor初期化
+	m_editor.Init();
+
+	//自動解答ビジュアライザー生成
+	auto visualizerObj = std::make_shared<GameObject>();
+	visualizerObj->SetName("SolutionVisualizer");
+	visualizerObj->SetTag(GameObject::Tag::System);
+	auto visComp = visualizerObj->AddComponent<SolutionVisualizerComponent>();
+	visComp->SetViewModel(m_spGameViewModel);
+	AddObject(visualizerObj);
+	visualizerObj->Init();
+
+	GameManager::Instance().StartNewGame();
+	GameManager::Instance().SetParMoves(m_spGameViewModel->GetLoadedParMoves());
+
+	//各種パーティクルシステムの登録
+	{
+		auto coldAirSys = std::make_unique<ColdAirParticleSystem>(this);
+		coldAirSys->Init();
+		m_particleSystems["ColdAir"] = std::move(coldAirSys);
+
+		auto trailSys = std::make_unique<TrailParticleSystem>(this);
+		trailSys->Init();
+		m_particleSystems["Trail"] = std::move(trailSys);
+
+		auto jumpSys = std::make_unique<JumpParticleSystem>(this);
+		jumpSys->Init();
+		m_particleSystems["Jump"] = std::move(jumpSys);
+
+		auto updraftSys = std::make_unique<UpdraftParticleSystem>(this);
+		updraftSys->Init();
+		m_particleSystems["Updraft"] = std::move(updraftSys);
+
+		auto sparkleSys = std::make_unique<SparkleParticleSystem>(this);
+		sparkleSys->Init();
+		m_particleSystems["Sparcle"] = std::move(sparkleSys);
+
+		auto dustSys = std::make_unique<DustParticleSystem>(this);
+		dustSys->Init();
+		m_particleSystems["Dust"] = std::move(dustSys);
+
+		auto sparkSys = std::make_unique<SparkParticleSystem>(this);
+		sparkSys->Init();
+		m_particleSystems["Sparc"] = std::move(sparkSys);
+
+		auto shockwaveSys = std::make_unique<ShockwaveParticleSystem>(this);
+		shockwaveSys->Init();
+		m_particleSystems["Sockwave"] = std::move(shockwaveSys);
+
+		auto implosionSys = std::make_unique<ImplosionParticleSystem>(this);
+		implosionSys->Init();
+		m_particleSystems["Implosion"] = std::move(implosionSys);
+	}
+
+	//7:現在のモードに応じてアクティブカメラを設定
+	OnModeChanged(SceneManager::Instance().GetCurrentMode());
+
+	m_spBGM = KdAudioManager::Instance().Play("Asset/Sound/GameBGM.wav", true, 1.0f);
+}
+
+void GameScene::SceneUpdate()
+{
+
+	if (SceneManager::Instance().GetCurrentMode() == SceneManager::SceneMode::Game || SceneManager::Instance().GetCurrentMode() == SceneManager::SceneMode::UI)
+	{
+		//UIモード(操作説明)の切り替え
+		if (KdInputManager::Instance().IsPress("Tab"))
+		{
+			m_bShowControlsWindow = !m_bShowControlsWindow;
+
+			if (m_bShowControlsWindow)
+			{
+				SceneManager::Instance().SetMode(SceneManager::SceneMode::UI);
+			}
+			else
+			{
+				SceneManager::Instance().SetMode(SceneManager::SceneMode::Game);
+			}
+		}
+
+		if (SceneManager::Instance().GetCurrentMode() == SceneManager::SceneMode::Game)
+		{
+			//タイマー開始判定。プレイヤーが何か操作したら計測開始
+			if (!m_isTimerStarted)
+			{
+				if (KdInputManager::Instance().IsPress("MoveForward") ||
+					KdInputManager::Instance().IsPress("MoveBack") ||
+					KdInputManager::Instance().IsPress("MoveLeft") ||
+					KdInputManager::Instance().IsPress("MoveRight") ||
+					KdInputManager::Instance().IsPress("Jump") ||
+					KdInputManager::Instance().IsPress("Select"))
+				{
+					if (auto timerObj = FindObject("Timer"))
+					{
+						if (auto timerComp = timerObj->GetComponent<TimerComponent>())
+						{
+							timerComp->StartTimer();
+							m_isTimerStarted = true;
+						}
+					}
+				}
+			}
+
+			if (m_isTimerStarted)
+			{
+				m_gameInputHandler->Update();
+
+				//パーティクルシステムの更新
+				float deltatime = Application::Instance().GetDeltaTime();
+				for (auto& [name, system] : m_particleSystems)
+				{
+					system->Update(deltatime);
+				}
+			}
+		}
+	}
+	else if (SceneManager::Instance().GetCurrentMode() == SceneManager::SceneMode::Create)
+	{
+		//アンドゥ処理(Ctrl + Z)
+		bool isCtrlDown = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
+		if (isCtrlDown && KdInputManager::Instance().IsPress("Undo"))
+		{
+			m_commandInvoker->UndoLastCommand();
+			Application::Instance().AddLog("Undo");
+		}
+	}
+}
+
+void GameScene::PostUpdate()
+{
+	BaseScene::PostUpdate();
+}
+
+void GameScene::Draw()
+{
+	//現在のモードによって処理を分岐
+	if (SceneManager::Instance().GetCurrentMode() == SceneManager::SceneMode::Create)
+	{
+		//描画先を画面からエディタのレンダーターゲットに変更
+		KdRenderTargetChanger rtChanger;
+		rtChanger.ChangeRenderTarget(m_editor.GetSceneRT());
+
+		//レンダーターゲットをクリア
+		m_editor.GetSceneRT().ClearTexture();
+
+		//全ての3Dオブジェクトをレンダーターゲットに描画
+		BaseScene::Draw();
+
+		//描画先を元に戻す(rtChangerのデストラクタで自動で戻る)
+
+		//エディタUI描画
+		m_editor.Draw(*this);
+		if (m_debugWire)
+		{
+			PhysicsSystem::Instance().DrawDebug(*m_debugWire);
+			m_debugWire->Draw();
+		}
+	}
+	else
+	{
+		BaseScene::Draw();
+
+		//パーティクルシステムの描画
+		for (auto& [name, system] : m_particleSystems)
+		{
+			system->Draw();
+		}
+
+		if (m_bShowControlsWindow)
+		{
+			DrawControlsWindow();
+		}
+
+		if (m_bShowTutorialHint)
+		{
+			DrawTutorialHintWindow();
+		}
+	}
+}
+
+void GameScene::Release()
+{
+	m_objList.clear();
+	if (m_spBGM && m_spBGM->IsPlaying())
+	{
+		m_spBGM->Stop();
+	}
+	m_spBGM = nullptr;
+}
+
+void GameScene::OnModeChanged(SceneManager::SceneMode newMode)
+{
+	if (newMode == SceneManager::SceneMode::Create)
+	{
+		if (auto editorCam = FindObject("EditorCamera"))
+		{
+			SetActiveCamera(editorCam->GetComponent<EditorCameraComponent>());
+		}
+	}
+	else
+	{
+		if (auto tpsCam = FindObject("TPS_Camera"))
+		{
+			SetActiveCamera(tpsCam->GetComponent<CameraComponent>());
+		}
+	}
+}
+
+bool GameScene::HasUnsavedChanges() const
+{
+	if (m_spGameViewModel)
+	{
+		return m_spGameViewModel->IsDirty();
+	}
+	return false;
+}
+
+void GameScene::RequestSaveStage()
+{
+	if (!m_spGameViewModel)return;
+
+	auto& gm = GameManager::Instance();
+
+	//新規作成での初回保存か
+	if (gm.GetLoadMode() == GameManager::LoadMode::CreateNew)
+	{
+		auto& slm = StageListManager::Instance();
+
+		//新しいファイルパスを生成
+		std::string newFilePath = slm.GenerateNewStagePath();
+
+		//ViewModelに保存を命令
+		m_spGameViewModel->SaveStage(newFilePath);
+
+		//StageListManagerに新しいエントリを追加
+		const std::string& newLabel = gm.GetCurrentStageLabel();
+		slm.AddStageEntry(newLabel, newFilePath);
+
+		//GameManagerの更新
+		gm.UpdateAfterNewStageSave(newFilePath);
+
+		Application::Instance().AddLog("New stage saved and added to StageList.");
+	}
+	else//既存のステージの保存
+	{
+		m_spGameViewModel->SaveStage(gm.GetCurrentFilePath());
+		UpdateStageListLabel();
+	}
+}
+
+void GameScene::Undo()
+{
+	if (m_commandInvoker)
+	{
+		m_commandInvoker->UndoLastCommand();
+	}
+}
+
+void GameScene::UndoClearFrimEditor()
+{
+	if (m_commandInvoker)
+	{
+		m_commandInvoker->Clear();
+	}
+}
+
+void GameScene::UpdateStageListLabel()
+{
+	const auto& gm = GameManager::Instance();
+	const std::string& filePath = gm.GetCurrentFilePath();
+	const std::string& label = gm.GetCurrentStageLabel();
+
+	StageListManager::Instance().UpdateStageLabel(filePath, label);
+}
+
+std::shared_ptr<EditorCameraComponent> GameScene::GetEditorCamera() const
+{
+	if (auto editorCam = FindObject("EditorCamera"))
+	{
+		return editorCam->GetComponent<EditorCameraComponent>();
+	}
+	return nullptr;
+}
+
+void GameScene::ShowTutorialHint(const std::string& text, const std::string& imagePath, const std::string& blockName)
+{
+	if (m_bShowTutorialHint)return;
+
+	//変数をクリア
+	m_blockName.clear();
+	m_hitText.clear();
+	m_pHintTexture = nullptr;
+
+	m_bShowTutorialHint = true;
+	m_blockName = blockName;
+	m_hitText = text;
+	if (!imagePath.empty())
+	{
+		m_pHintTexture = KdAssets::Instance().m_textures.GetData(imagePath);
+	}
+
+	//UIモードに変更してゲームプレイを停止
+	SceneManager::Instance().SetMode(SceneManager::SceneMode::UI);
+}
+
+ParticleSystem* GameScene::GetParticleSystem(const std::string& name)
+{
+	auto it = m_particleSystems.find(name);
+	if (it != m_particleSystems.end())
+	{
+		return it->second.get();
+	}
+	return nullptr;
+}
+
+void GameScene::DrawControlsWindow()
+{
+	//ウィンドウの角の丸みを大きくする
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.0f);
+
+	//ウィンドウ内の余白を広げる
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
+
+	//枠線追加
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+
+	//ウィンドウ背景色
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.05f, 0.05f, 0.15f, 0.85f));
+
+	//タイトルバー(アクティブ)の色指定
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.05f, 0.05f, 0.15f, 0.85f));
+
+	//枠線の色
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.7f, 1.0f, 0.5f));
+
+	//テキストの色指定
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 1.0f, 1.0f));
+
+	//区切り線
+	ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.3f, 0.7f, 1.0f, 0.3f));
+
+	//ボタン
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.3f, 0.6f, 0.8f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.4f, 0.8f, 0.9f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.35f, 0.7f, 1.0f));
+
+	ImGui::SetNextWindowSize(ImVec2(400, 250), ImGuiCond_Appearing);
+
+	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+	if (ImGui::Begin(U8("操作方法"), &m_bShowControlsWindow, ImGuiWindowFlags_NoTitleBar))
+	{
+		ImGui::Text(U8("=== 基本操作 ==="));
+		ImGui::BulletText(U8("W, A, S, D : 移動"));
+		ImGui::BulletText(U8("スペースキー : ジャンプ"));
+		ImGui::BulletText(U8("マウス : 視点移動"));
+
+		ImGui::Separator();
+
+		ImGui::Text(U8("=== ブロック操作 ==="));
+		ImGui::BulletText(U8("左クリック : ブロックを選択"));
+		ImGui::TextWrapped(U8("同じブロックを選択すると、そのブロックの選択が解除されます。"));
+		ImGui::TextWrapped(U8("2つのブロックを選択すると、それらの位置が入れ替わります。"));
+
+		ImGui::Separator();
+
+		if (ImGui::Button(U8("ステージセレクト"), ImVec2(120, 0)))
+		{
+			SceneManager::Instance().ChangeScene(SceneManager::SceneType::StageSelect);
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::Button(U8("タイトル"), ImVec2(120, 0)))
+		{
+			SceneManager::Instance().ChangeScene(SceneManager::SceneType::Title);
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::Button(U8("閉じる"), ImVec2(120, 0)))
+		{
+			m_bShowControlsWindow = false;
+			SceneManager::Instance().SetMode(SceneManager::SceneMode::Game);
+		}
+	}
+	ImGui::End();
+
+	ImGui::PopStyleColor(8);
+
+	ImGui::PopStyleVar(3);
+}
+
+void GameScene::DrawTutorialHintWindow()
+{
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+	//画面を覆う全画面オーバーレイ(スクリム)を描画して背景を暗くする
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowBgAlpha(0.7f);
+	//入力を受け付けない透明なウィンドウを最前面に描画
+	ImGui::Begin("TutorialBackground", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
+	ImGui::End();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f);//角を丸く
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15.0f, 15.0f));//余白を広めに
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);//枠線を消す
+
+	//コンテンツパネル描画
+	ImGui::SetNextWindowPos(viewport->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(450, 0));
+
+	ImGui::Begin("Tutorial Panel", &m_bShowTutorialHint, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+	//文字サイズ変更
+	ImGui::SetWindowFontScale(1.2f);
+
+	//ヒント画像の表示
+	if (m_pHintTexture)
+	{
+		//中央に配置
+		float imageWidth = m_pHintTexture->GetInfo().Width;
+		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - imageWidth) * 0.5f);
+
+		//DirectXのテクスチャハンドルを取得
+		ImTextureID texId = (ImTextureID)m_pHintTexture->WorkSRView();
+
+		//画像サイズ取得
+		ImVec2 texSize = ImVec2(imageWidth, m_pHintTexture->GetInfo().Height);
+
+		ImGui::Image(texId, texSize);
+	}
+
+	ImGui::Spacing();
+
+	//ブロック名表示
+	if (!m_blockName.empty())
+	{
+		ImGui::SeparatorText(m_blockName.c_str());
+		ImGui::Spacing();
+	}
+
+	//説明テキスト表示
+	if (!m_hitText.empty())
+	{
+		ImGui::TextWrapped(U8("%s"), m_hitText.c_str());
+		ImGui::Separator();
+	}
+
+	//OKボタン
+	float buttonWidth = 120;
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - buttonWidth) * 0.5f);
+	if (ImGui::Button("OK", ImVec2(buttonWidth, 0)))
+	{
+		m_bShowTutorialHint = false;
+		SceneManager::Instance().SetMode(SceneManager::SceneMode::Game);
+	}
+
+	//ウィンドウが閉じられた場合(Escキーなど)もゲームモードに戻す
+	if (!m_bShowTutorialHint)
+	{
+		SceneManager::Instance().SetMode(SceneManager::SceneMode::Game);
+	}
+
+	ImGui::End();
+
+	ImGui::PopStyleVar(3);
+}
