@@ -1,0 +1,943 @@
+{
+    "entities": [
+        {
+            "archetype": "Player",
+            "components": {
+                "ColliderComponent": {
+                    "layer": "LayerPlayer",
+                    "offset": [
+                        0.0,
+                        0.5,
+                        0.0
+                    ],
+                    "radius": 0.5,
+                    "shape": "sphere"
+                },
+                "DissolveComponent": {
+                    "blockResolution": 16.0,
+                    "edgeColor": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "edgeRange": 0.009999999776482582,
+                    "fadeDuration": 1.0
+                },
+                "MousePointerComponent": {
+                    "texture": "Asset/Textures/UI/MousePointer.png"
+                },
+                "PlayerStatsComponent": {
+                    "initialPos": [
+                        0.0,
+                        5.0,
+                        0.0
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Player/playerAni2.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "dynamic"
+                },
+                "TransformComponent": {
+                    "position": [
+                        -0.07632476091384888,
+                        1.116791009902954,
+                        -1.5
+                    ],
+                    "rotation": [
+                        0.0,
+                        -219.15756225585938,
+                        0.0
+                    ],
+                    "scale": [
+                        0.9999951720237732,
+                        1.0,
+                        0.9999951720237732
+                    ]
+                }
+            },
+            "name": "Player"
+        },
+        {
+            "archetype": "MovingBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Moving"
+                },
+                "ColliderComponent": {
+                    "layer": "LayerBlock",
+                    "model": "Asset/Models/Block/Moving/COLMoving.gltf",
+                    "shape": "box"
+                },
+                "DissolveComponent": {
+                    "blockResolution": 16.5,
+                    "edgeColor": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "edgeRange": 0.009999999776482582,
+                    "fadeDuration": 0.30000001192092896
+                },
+                "GlowPartComponent": {
+                    "blinkSpeed": 5.0,
+                    "enableBlink": false,
+                    "enableFloat": false,
+                    "enableRotate": false,
+                    "floatDirection": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "floatSpeed": 5.0,
+                    "glowColor": [
+                        0.0,
+                        50.0,
+                        0.0
+                    ],
+                    "instances": [
+                        {
+                            "baseRot": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "name": "Default",
+                            "offset": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "scale": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "isDirectional": false,
+                    "model": "Asset/Models/Block/Kinetic/KineticGlow4.gltf",
+                    "rotateAxis": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotateSpeed": 90.0
+                },
+                "MovingBlockComponent": {
+                    "active": true,
+                    "duration": 5.0,
+                    "endPos": [
+                        33.18295669555664,
+                        -0.43389803171157837,
+                        -5.633386611938477
+                    ],
+                    "startPos": [
+                        10.509257316589355,
+                        -0.13014130294322968,
+                        -5.555445194244385
+                    ]
+                },
+                "ParticleEmitterComponent": {
+                    "base_direction": [
+                        0.10753059387207031,
+                        -0.0014405548572540283,
+                        -0.0003695487976074219
+                    ],
+                    "emit_count": 1,
+                    "emit_frequency": 0.05000000074505806,
+                    "offsets": [
+                        [
+                            1.0,
+                            0.0,
+                            1.0
+                        ],
+                        [
+                            1.0,
+                            0.0,
+                            -1.0
+                        ],
+                        [
+                            -1.0,
+                            0.0,
+                            1.0
+                        ],
+                        [
+                            -1.0,
+                            0.0,
+                            -1.0
+                        ]
+                    ],
+                    "spread": 0.20000000298023224,
+                    "system_name": "Trail"
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Moving/NewMoving.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "kinematic"
+                },
+                "TransformComponent": {
+                    "position": [
+                        16.578990936279297,
+                        -0.2114567756652832,
+                        -5.576310157775879
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "MovingBlock_0"
+        },
+        {
+            "archetype": "GoalBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Goal"
+                },
+              "ColliderComponent": {
+                "layer": "LayerGround",
+                "isTrigger": true
+              },
+                "GlowPartComponent": {
+                    "blinkSpeed": 5.0,
+                    "enableBlink": false,
+                    "enableFloat": false,
+                    "enableRotate": true,
+                    "floatDirection": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "floatSpeed": 5.0,
+                    "glowColor": [
+                        50.0,
+                        40.0,
+                        0.0
+                    ],
+                    "instances": [
+                        {
+                            "baseRot": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "name": "Star",
+                            "offset": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "scale": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "isDirectional": false,
+                    "model": "Asset/Models/Block/Goal/Icon_Star.gltf",
+                    "rotateAxis": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotateSpeed": 120.0
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Goal/NewGoal.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        22.968454360961914,
+                        0.9927397966384888,
+                        16.700990676879883
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "GoalBlock_0"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_0"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        1.944929599761963,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_1"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        1.9235765933990479,
+                        0.0,
+                        -1.999269962310791
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_2"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        -2.012690544128418
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_3"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        21.98525047302246,
+                        0.0,
+                        14.895001411437988
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_4"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        21.98525047302246,
+                        0.0,
+                        16.907691955566406
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_5"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        23.9301815032959,
+                        0.0,
+                        16.907691955566406
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_6"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        23.90882682800293,
+                        0.0,
+                        14.908422470092773
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_7"
+        },
+        {
+            "archetype": "MovableBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Movable"
+                },
+                "ColliderComponent": {
+                    "layer": "LayerBlock"
+                },
+                "DissolveComponent": {
+                    "blockResolution": 16.0,
+                    "edgeColor": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "edgeRange": 0.009999999776482582,
+                    "fadeDuration": 0.30000001192092896
+                },
+                "GlowPartComponent": {
+                    "blinkSpeed": 5.0,
+                    "enableBlink": false,
+                    "enableFloat": false,
+                    "enableRotate": false,
+                    "floatDirection": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "floatSpeed": 5.0,
+                    "glowColor": [
+                        0.0,
+                        30.0,
+                        50.0
+                    ],
+                    "instances": [
+                        {
+                            "baseRot": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "name": "Core",
+                            "offset": [
+                                0.0,
+                                0.28999999165534973,
+                                0.0
+                            ],
+                            "scale": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "isDirectional": false,
+                    "model": "Asset/Models/Block/Movable/NormalGlow3.gltf",
+                    "rotateAxis": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotateSpeed": 90.0
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Movable/NormalBody.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "kinematic"
+                },
+                "TransformComponent": {
+                    "position": [
+                        2.913532257080078,
+                        0.4447549283504486,
+                        5.026347637176514
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "MovableBlock_0"
+        },
+        {
+            "archetype": "MovableBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Movable"
+                },
+                "ColliderComponent": {
+                    "layer": "LayerBlock"
+                },
+                "DissolveComponent": {
+                    "blockResolution": 16.0,
+                    "edgeColor": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "edgeRange": 0.009999999776482582,
+                    "fadeDuration": 0.30000001192092896
+                },
+                "GlowPartComponent": {
+                    "blinkSpeed": 5.0,
+                    "enableBlink": false,
+                    "enableFloat": false,
+                    "enableRotate": false,
+                    "floatDirection": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "floatSpeed": 5.0,
+                    "glowColor": [
+                        0.0,
+                        30.0,
+                        50.0
+                    ],
+                    "instances": [
+                        {
+                            "baseRot": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "name": "Core",
+                            "offset": [
+                                0.0,
+                                0.28999999165534973,
+                                0.0
+                            ],
+                            "scale": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "isDirectional": false,
+                    "model": "Asset/Models/Block/Movable/NormalGlow3.gltf",
+                    "rotateAxis": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotateSpeed": 90.0
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Movable/NormalBody.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "kinematic"
+                },
+                "TransformComponent": {
+                    "position": [
+                        -3.1051836013793945,
+                        0.4458686113357544,
+                        1.3864738941192627
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "MovableBlock_1"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        21.98525047302246,
+                        0.0,
+                        12.84816837310791
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_8"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        21.98525047302246,
+                        0.0,
+                        11.01533031463623
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        -0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_9"
+        },
+        {
+            "archetype": "PreviewCamera",
+            "components": {
+                "TransformComponent": {
+                    "position": [
+                        -6.377823829650879,
+                        11.701263427734375,
+                        -8.743896484375
+                    ],
+                    "rotation": [
+                        28.000030517578125,
+                        45.19999313354492,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "PreviewCamera"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        -3.9423677921295166
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_10"
+        },
+        {
+            "archetype": "WallBlock",
+            "components": {
+                "BlockDataComponent": {
+                    "type": "Wall"
+                },
+                "ColliderComponent": {
+                    "layer": [
+                        "LayerGround",
+                        "LayerBlock"
+                    ]
+                },
+                "RenderComponent": {
+                    "model": "Asset/Models/Block/Wall/NewWall.gltf"
+                },
+                "RigidbodyComponent": {
+                    "type": "static"
+                },
+                "TransformComponent": {
+                    "position": [
+                        1.9235765933990479,
+                        0.0,
+                        -3.9289472103118896
+                    ],
+                    "rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            "name": "WallBlock_11"
+        }
+    ],
+    "parMoves": 0
+}

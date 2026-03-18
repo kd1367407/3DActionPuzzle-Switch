@@ -1,0 +1,40 @@
+{
+    "stages": [
+		{
+			"label": "Operation",
+			"path": "Asset/Data/Stages/Tutorial_Operation.json"
+		},
+		{
+			"label": "Moving",
+			"path": "Asset/Data/Stages/Tutorial_Moving.json"
+		},
+		{
+			"label": "Movable",
+			"path": "Asset/Data/Stages/Tutorial_Movable.json"
+		},
+		{
+			"label": "Checkpoint",
+			"path": "Asset/Data/Stages/Tutorial_Checkpoint.json"
+		},
+		{
+			"label": "Sinking",
+			"path": "Asset/Data/Stages/Tutorial_Sinking.json"
+		},
+		{
+			"label": "Rotating",
+			"path": "Asset/Data/Stages/Tutorial_Rotating.json"
+		},
+		{
+			"label": "Jump",
+			"path": "Asset/Data/Stages/Tutorial_Jump.json"
+		},
+		{
+			"label": "Slippery",
+			"path": "Asset/Data/Stages/Tutorial_Slippery.json"
+		},
+		{
+			"label": "Transfer",
+			"path": "Asset/Data/Stages/Tutorial_Transfer.json"
+		}
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "stages": [
+        {
+            "label": "Ride",
+            "path": "Asset/Data/Stages/Stage01.json"
+        },
+        {
+            "label": "Spiral",
+            "path": "Asset/Data/Stages/Stage04.json"
+        },
+        {
+            "label": "Tower",
+            "path": "Asset/Data/Stages/Stage05.json"
+        },
+        {
+            "label": "SkyBypass",
+            "path": "Asset/Data/Stages/Stage08.json"
+        }
+    ]
+}
